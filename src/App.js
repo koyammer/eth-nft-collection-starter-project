@@ -6,15 +6,23 @@ import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 
 import twitterLogo from "./assets/twitter-logo.svg";
+
+/* 
+ * ABIファイルを含むMyEpicNFT.jsonファイルをインポートする
+ * docker exec -it unchaintest_web_1 /bin/ash
+ * cd ETH-NFT-collection
+ * cp epic-nfts/artifacts/contracts/MyEpicNFT.sol/MyEpicNFT.json eth-nft-collection-starter-project/src/utils/MyEpicNFT.json
+ * 
+*/
 import myEpicNft from "./utils/MyEpicNFT.json";
 // Constantsを宣言する: constとは値書き換えを禁止した変数を宣言する方法です。
-const TWITTER_HANDLE = 'desmo_nft';
+const TWITTER_HANDLE = "rudolf134";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const OPENSEA_LINK = 'https://testnets.opensea.io/assets';
-const TOTAL_MINT_COUNT = 50;
+const OPENSEA_LINK = 'https://testnets.opensea.io/assets/goerli/';
+//const TOTAL_MINT_COUNT = 5;
 
 // コントラクトアドレスをCONTRACT_ADDRESS変数に格納
-const CONTRACT_ADDRESS = "0xe709a08C63e6EdabA32fF3dE480A339A0a5Cd2aB";
+const CONTRACT_ADDRESS = "0xdDAdC264Fe45bd352359707C7dA94A45d3E73442";
 
 const App = () => {
   // ユーザーのウォレットアドレスを格納するために使用する状態変数を定義します。
@@ -25,6 +33,10 @@ const App = () => {
   const [isMinting, setIsMinting] = useState("");
   // 完売フラグ
   const [soldOut, setSoldOut] = useState("");
+  // NFTURL
+  const [openSeaUrl, setOpenSeaUrl] = useState("");
+  // sale limit
+  const [saleLimit, setSaleLimit] = useState("");
 
   // setupEventListener 関数を定義します。
   // MyEpicNFT.sol の中で event が　emit された時に、
@@ -48,6 +60,8 @@ const App = () => {
           alert(
             `あなたのウォレットに NFT を送信しました。OpenSea に表示されるまで最大で10分かかることがあります。NFT へのリンクはこちらです: ${OPENSEA_LINK}/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
           );
+
+          setOpenSeaUrl(OPENSEA_LINK +  "/" + CONTRACT_ADDRESS  + "/" + tokenId.toNumber());
         });
 
         console.log("Setup event listener!");
@@ -139,6 +153,7 @@ const App = () => {
       setupEventListener();
       // ミント済み数を取得
       getTotalSupply();
+      
     } catch (error) {
       console.log(error);
     }
@@ -194,10 +209,12 @@ const App = () => {
         );
 
         let totalSupply = await connectedContract.totalSupply();
-        setTotalSupply(totalSupply);
-        console.log("Got totalSupply");
+        let saleLimit = await connectedContract.getSaleLimit();
 
-        if (totalSupply == TOTAL_MINT_COUNT) {
+        setTotalSupply(totalSupply);
+        setSaleLimit(saleLimit);
+
+        if (totalSupply >= saleLimit) {
           setSoldOut(true)
         }
 
@@ -208,6 +225,8 @@ const App = () => {
       console.log(error);
     }
   }
+
+
   // ページがロードされた際に下記が実行されます。
   useEffect(() => {
     checkIfWalletIsConnected();
@@ -258,8 +277,8 @@ const App = () => {
       <div className="container">
         <div className="header-container">
           <p className="header gradient-text">My NFT Collection</p>
-          <p className="sub-text">あなただけの特別な NFT を Mint しよう💫</p>
-          <p className="mint-count">現在のミント済み数 {`${totalSupply} / ${TOTAL_MINT_COUNT}`}</p>
+          <p className="sub-text">あなただけの特別な NFT を Mint しよう</p>
+          <p className="mint-count">現在のミント済み数 {`${totalSupply} / ${saleLimit}`}</p>
           {/*条件付きレンダリング。
           // すでにウォレット接続されている場合は、
           // Mint NFT か Minting...を表示する。*/}
@@ -276,20 +295,34 @@ const App = () => {
           <button className="opensea-button">
             <a
               className="opensea-text"
-              href="https://testnets.opensea.io/collection/squarenft-80"
-              target="_blank"
+              href="https://testnets.opensea.io/collection/squarenft-331"
               rel="noreferrer"
             >
               OpenSeaでコレクションを表示
             </a>
           </button>
         </div>
+        {
+        openSeaUrl.length > 0 &&
+          <div className="middle-container">
+          <button className="opensea-button">
+            <a
+              className="opensea-text"
+              href={openSeaUrl}
+              rel="noreferrer"
+            >
+              openSeaUrl
+            </a>
+          </button>
+          </div>
+        }
+
+
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
           <a
             className="footer-text"
             href={TWITTER_LINK}
-            target="_blank"
             rel="noreferrer"
           >{`built on @${TWITTER_HANDLE}`}</a>
         </div>

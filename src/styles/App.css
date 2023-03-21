@@ -61,13 +61,13 @@
 }
 
 .minting-button {
-  background: -webkit-linear-gradient(left, #d6006f, #f6ff42);
+  background: -webkit-linear-gradient(left, #4a494a, #383934);
   background-size: 200% 200%;
   animation: blink 1.5s ease infinite;
 }
 
 .soldout-button {
-  background: -webkit-linear-gradient(left, #35aee2, #a200d6);
+  background: -webkit-linear-gradient(left, #4a494a, #383934);
   background-size: 200% 200%;
   animation: gradient-animation 4s ease infinite;
 }
